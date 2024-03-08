@@ -18,10 +18,15 @@ times = []
 titles = []
 themes = []
 
-for i in soup.find_all('li', class_='HHac3'):
-    time = i.find('time', class_='HHht')
-    title = i.find('a', class_='HHfn')
-    theme = i.find('a', class_='HHjt HHcz')
+class_li_class = "IBae3" # "HHac3"
+class_time_class = "IBfn" # "HHht"
+class_title_class = "IBd3" # "HHfn"
+class_theme_class = "IBgl IBl7" # "HHjt HHcz"
+
+for i in soup.find_all('li', class_=class_li_class):
+    time = i.find('time', class_=class_time_class)
+    title = i.find('a', class_=class_title_class)
+    theme = i.find('a', class_=class_theme_class)
 
     if time is None:
         times.append(None)
@@ -40,6 +45,7 @@ for i in soup.find_all('li', class_='HHac3'):
 
 if len(times) == 0:
     print(f"Ничего не было найдено за дату {args.year}-{args.month}-{args.day}")
+    print("Либо такой страницы не существуют, либо на сайте были изменены классы элементов")
 else:
     print(f"Найдено: {len(times)} новостей")
 
