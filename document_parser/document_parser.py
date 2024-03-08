@@ -3,6 +3,37 @@ import pypdf
 import pytesseract
 import textract
 from pandas import DataFrame
+from PIL import Image
+import tempfile
+import cv2
+import numpy as np
+
+def transorm_image_for_ocr(img):
+
+    def remove_noise(img):
+        return cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 15)
+
+    def get_grayscale(img):
+        return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # конвертируем изображение в чёрно-белое
+    def thresholding(img):
+        return cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+
+    img_to_transform = np.array(img)
+    
+    # нормализуем изображение
+    norm_img = np.zeros((img_to_transform.shape[0], img_to_transform.shape[1]))
+    img1 = cv2.normalize(img_to_transform, norm_img, 0, 255, cv2.NORM_MINMAX)
+
+    img2 = remove_noise(img1)
+
+    img3 = get_grayscale(img2)
+
+    img4 = thresholding(img3)
+
+    # https://stackoverflow.com/questions/10965417/how-to-convert-a-numpy-array-to-pil-image-applying-matplotlib-colormap
+    return Image.fromarray(np.uint8(img4)).convert('RGB')
 
 def read_text_from_pdf(path_to_file:str, scan:bool=False, lang:str='eng+rus'):
     """
@@ -26,7 +57,7 @@ def read_text_from_pdf(path_to_file:str, scan:bool=False, lang:str='eng+rus'):
         page_number.append(count)
         if scan:
             for image in page.images:
-                text += pytesseract.image_to_string(image.image, lang=lang)
+                text += pytesseract.image_to_string(transorm_image_for_ocr(image.image), lang=lang)
                 text += '\n'
         else:
             print('Зашли')
